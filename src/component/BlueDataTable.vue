@@ -4,14 +4,23 @@
     :title="title"
     :data="rows"
     :columns="getColumns"
-    :pagination.sync="thisPagination"
+    :pagination.sync="localPagination"
     @update:pagination="paginationUpdated"
     separator="cell"
     :loading="loading"
+    :filter="filter"
     class="table-sticky-header"
     @request="_onRequest"
     binary-state-sort
-  />
+  >
+    <template v-slot:top="props">
+      <q-input v-model="filter" :placeholder="localSettings.search.placeholder" class="search-input" dense clearable :debounce="localSettings.search.debounce">
+        <template v-slot:append>
+          <q-icon :name="localSettings.search.icon" />
+        </template>
+      </q-input>
+    </template>
+  </q-table>
 </div>
 </template>
 <script>
@@ -22,6 +31,14 @@ const defaultPagination = {
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0
+}
+
+const defaultSettings = {
+  search: {
+    debounce: 300,
+    placeholder: 'Search',
+    icon: 'fas fa-search'
+  }
 }
 
 const props = {
@@ -37,6 +54,9 @@ const props = {
     type: Object,
     default: {}
   },
+  settings: {
+    type: Object
+  },
   title: {
     type: String
   }
@@ -45,9 +65,12 @@ const props = {
 export default {
   props,
   data: () => ({
+    filter: null,
     loading: false,
     rows: [],
-    thisPagination: defaultPagination
+    search: '',
+    localPagination: defaultPagination,
+    localSettings: defaultSettings
   }),
   computed: {
     getColumns () {
@@ -63,14 +86,18 @@ export default {
     }
   },
   mounted () {
-    // Allows parent prop to set pagination props
-    this.thisPagination = {
-      ...defaultPagination,
+    // Allows parent prop to set pagination, setting props
+    this.localPagination = {
+      ...this.localPagination,
       ...this.pagination
+    }
+    this.localSettings = {
+      ...this.localSettings,
+      ...this.settings
     }
     // Initial data request
     this._onRequest({
-      pagination: this.thisPagination
+      pagination: this.localPagination
     })
   },
   methods: {
@@ -78,28 +105,26 @@ export default {
       console.log('paginationUpdated')
     },
     _onRequest (props) {
+      console.log('BlueDataTable _onRequest props', props)
       let { page, rowsPerPage, sortBy, descending } = props.pagination
       this.loading = true
       let dir = descending ? 'desc' : 'asc'
       let params = {
-        page: page,
-        per_page: rowsPerPage,
-        sort: sortBy,
-        dir: dir,
-        q: {
-          all: this.search
+        ...props.pagination,
+        ...{
+          filter: this.filter
         }
       }
       return new Promise((resolve, reject) => {
         this.onRequest(params, resolve, reject)
       }).then(({ data, count }) => {
         this.rows = data
-        this.thisPagination = props.pagination
-        this.thisPagination.rowsNumber = parseInt(count)
-        this.thisPagination.page = page
-        this.thisPagination.rowsPerPage = rowsPerPage
-        this.thisPagination.sortBy = sortBy
-        this.thisPagination.descending = descending
+        this.localPagination = props.pagination
+        this.localPagination.rowsNumber = parseInt(count)
+        this.localPagination.page = page
+        this.localPagination.rowsPerPage = rowsPerPage
+        this.localPagination.sortBy = sortBy
+        this.localPagination.descending = descending
         this.loading = false
       })
     }
@@ -110,12 +135,12 @@ export default {
     pagination: {
       deep: true,
       handler (pagination) {
-        this.thisPagination = {
-          ...this.thisPagination,
+        this.localPagination = {
+          ...this.localPagination,
           ...pagination
         }
         this._onRequest({
-          pagination: this.thisPagination
+          pagination: this.localPagination
         })
       }
     }
