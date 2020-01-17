@@ -15,6 +15,7 @@
     :selection="selection"
     :selected.sync="selected"
     binary-state-sort
+    ref="qtable"
   >
     <template v-slot:top>
       <div class="col-8 title">
@@ -73,8 +74,8 @@
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
         <q-td colspan="100%" style="position: relative">
-          <q-btn class="expanded-close-btn" color="red" icon="fas fa-times" @click="props.expand = false" size="sm" />
-          <slot name="expanded" :value="props">Expanded</slot>
+          <q-btn class="expanded-close-btn" color="red" icon="fas fa-times" @click="expand(props.key)" size="sm" />
+          <slot name="expanded" :props="{...props, ...{expandView: expandView[props.key]}}">Expanded</slot>
         </q-td>
       </q-tr>
     </template>
@@ -289,8 +290,10 @@ export default {
       action: null,
       title: 'Confirm',
       message: '',
+      props: {},
       show: false
     },
+    expandView: {},
     loading: false,
     rows: [],
     filter: null,
@@ -337,32 +340,54 @@ export default {
         pagination: this.localPagination
       })
     },
+    expand (id, expandView) {
+      let expand = false
+      // If no expandView is passed, simply toggle the expanded state
+      if (!expandView) {
+        expand = !this.expandView[id]
+      // If expandView is different than the current view, even if it's
+      // already expanded, simply switch the view
+      } else if (!this.expandView[id] || (this.expandView[id] && this.expandView[id] !== expandView)) {
+        expand = true
+      }
+      // Update qtable and force update
+      if (!expand) {
+        delete this.$refs.qtable.rowsExpanded[id]
+        delete this.expandView[id]
+      } else {
+        this.$refs.qtable.rowsExpanded[id] = true
+        this.expandView[id] = expandView
+      }
+      this.$forceUpdate()
+    },
     __template (string) {
       string = string.replace(/\$\{count\}/g, this.selected.length)
       string = string.replace(/\$\{entityName\}/g, this.settings.entityName)
       string = string.replace(/\$\{entityNames\}/g, this.settings.entityName + 's')
       return string
     },
-    __onAction (action, props) {
+    /**
+     * An action should be able recieve the action type
+     * and the row or rows it is acting on.
+     */
+    __onAction (action, props = {}) {
+      if (!props.row) {
+        props.selected = this.selected
+      }
       if (!action.confirm) {
-        this.onAction(action.action, props)
+        new Promise((resolve, reject) => {
+          this.onAction(action.action, props, resolve, reject)
+        })
         return
       }
       this.confirm.action = action
-      if (Array.isArray(rowOrRows)) {
-        this.confirm.rows = rowOrRows
-        this.confirm.row = null
-      } else {
-        this.confirm.row = rowOrRows
-        this.confirm.rows = null
-      }
+      this.confirm.props = props
       this.confirm.message = this.__template(action.messageConfirm)
       this.confirm.show = true
     },
     onConfirm () {
       new Promise((resolve, reject) => {
-        const data = Array.isArray(this.confirm.rows) ? this.confirm.rows : this.confirm.row
-        this.onAction(this.confirm.action.action, data, resolve, reject)
+        this.onAction(this.confirm.action.action, this.confirm.props, resolve, reject)
       }).then(() => {
         if (this.confirm.action.messageSuccess) {
           this.$q.notify(this.__template(this.confirm.action.messageSuccess))

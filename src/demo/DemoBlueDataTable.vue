@@ -14,12 +14,12 @@
       </template>
 
       <template v-slot:expanded="props">
-        <div v-if="expandView === 'view'">
-          <h3>{{ props.value.row.name }}</h3>
-          <p><strong>Location</strong> {{ props.value.row.location }}</p>
+        <div v-if="props.props.expandView === 'view'">
+          <h3>{{ props.props.row.name }}</h3>
+          <p><strong>Location</strong> {{ props.props.row.location }}</p>
         </div>
-        <div v-else-if="expandView === 'edit'">
-          <h3>Editing {{ props.value.row.name }}</h3>
+        <div v-else-if="props.props.expandView === 'edit'">
+          <h3>Editing {{ props.props.row.name }}</h3>
           <p>Edit form here</p>
         </div>
       </template>
@@ -65,12 +65,12 @@ export default {
   name: 'DemoBlueDataTable',
   data: () => ({
     columns,
-    expandView: null,
     pagination,
     settings
   }),
   methods: {
     onAction (action, props, resolve, reject) {
+      console.log('action', action, props)
       if (action === 'delete') {
         sampleData = sampleData.filter(thisRow => {
           return thisRow.id !== props.row.id
@@ -90,13 +90,10 @@ export default {
       } else if (action === 'export-csv') {
         // asdf
       } else if (action === 'view') {
-        this.expandView = 'view'
-        props.expand = true
-        console.log('expanded')
+        this.$refs.table.expand(props.key, 'view')
         return
       } else if (action === 'edit') {
-        this.expandView = 'edit'
-        props.expand = true
+        this.$refs.table.expand(props.key, 'edit')
         return
       }
       resolve()
