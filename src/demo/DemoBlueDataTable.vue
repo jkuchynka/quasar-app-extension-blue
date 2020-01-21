@@ -10,7 +10,7 @@
       ref="table"
     >
       <template v-slot:body-cell-custom="props">
-        <q-btn color="green">Custom Cell Template id: {{ props.value.row.id }}</q-btn>
+        <q-btn color="green" @click="sayHi(props)">Say Hi</q-btn>
       </template>
 
       <template v-slot:expanded="props">
@@ -44,12 +44,14 @@ const columns = [
     name: 'role'
   },
   {
-    name: 'custom'
+    name: 'custom',
+    label: 'Custom Cell Template',
+    align: 'center'
   }
 ]
 
 const pagination = {
-  rowsPerPage: 10
+  rowsPerPage: 5
 }
 
 const settings = {
@@ -58,6 +60,14 @@ const settings = {
     placeholder: 'Enter search terms',
     debounce: 500,
     icon: 'fas fa-search'
+  },
+  show: {
+    // actions: false,
+    // batchActions: false,
+    // export: false,
+    // header: false,
+    // paginationPerPage: false,
+    // search: false
   }
 }
 
@@ -82,9 +92,9 @@ export default {
           this.$refs.table.doRequest()
         })
          */
-      } else if (action === 'delete-multiple') {
+      } else if (action === 'delete-selected') {
         sampleData = sampleData.filter(thisRow => {
-          return !props.rows.map(dataRow => dataRow.id).includes(thisRow.id)
+          return !props.selected.map(dataRow => dataRow.id).includes(thisRow.id)
         })
         console.log('deleted multiple')
       } else if (action === 'export-csv') {
@@ -136,6 +146,9 @@ export default {
         })
       })
       */
+    },
+    sayHi (props) {
+      alert(`Hi, ${props.value.row.name}`)
     }
   }
 }
@@ -170,6 +183,18 @@ let sampleData = [
     name: 'Dora',
     location: 'Explorin\'',
     role: 'admin'
+  },
+  {
+    id: 6,
+    name: 'Bart Simpson',
+    location: 'Springdale',
+    role: 'user'
+  },
+  {
+    id: 7,
+    name: 'Marge Simpson',
+    location: 'Springdale',
+    role: 'user'
   }
 ]
 </script>

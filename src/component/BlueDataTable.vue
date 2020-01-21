@@ -18,36 +18,38 @@
     ref="qtable"
   >
     <template v-slot:top>
-      <div class="col-8 title">
-        <div class="q-table__title">{{ title }}</div>
+      <div v-if="localSettings.show.header" class="col-12 row">
+        <div class="col-8 title">
+          <div class="q-table__title">{{ title }}</div>
 
-        <div class="filtersets">
-          <q-btn class="q-ma-sm active" @click=""
+          <div class="filtersets">
+            <q-btn class="q-ma-sm active" @click=""
+          </div>
         </div>
-      </div>
 
-      <div class="col-4">
-        <q-input v-model="filter" :placeholder="localSettings.search.placeholder" class="search-input" dense clearable :debounce="localSettings.search.debounce">
-          <template v-slot:append>
-            <q-icon :name="localSettings.search.icon" />
-          </template>
-        </q-input>
+        <div class="col-4">
+          <q-input v-model="filter" :placeholder="localSettings.search.placeholder" class="search-input" dense clearable :debounce="localSettings.search.debounce" v-if="localSettings.show.search">
+            <template v-slot:append>
+              <q-icon :name="localSettings.search.icon" />
+            </template>
+          </q-input>
 
-        <q-btn
-          class="filtersets-btn"
-          :icon="'fas fa-chevron-' + (showAdvancedSearch ? 'up' : 'down')"
-          flat
-          size="sm"
-          @click="showAdvancedSearch = !showAdvancedSearch"
-          title="Show Filters"
-        />
+          <q-btn
+            class="filtersets-btn"
+            :icon="'fas fa-chevron-' + (showAdvancedSearch ? 'up' : 'down')"
+            flat
+            size="sm"
+            @click="showAdvancedSearch = !showAdvancedSearch"
+            title="Show Filters"
+          />
+        </div>
       </div>
     </template>
 
     <template v-slot:body="props">
       <q-tr :props="props">
-        <q-td auto-width>
-          <q-toggle dense v-model="props.selected" />
+        <q-td auto-width align="center">
+          <q-checkbox dense v-model="props.selected" />
         </q-td>
 
         <q-td v-for="(column, idx) in getColumns" :key="column.name" :props="props">
@@ -67,7 +69,7 @@
             />
           </div>
           <div v-else>
-            <slot :name="`body-cell-${column.name}`" :value="props">{{ _displayCellValue(props.row[column.name]) }}</slot>
+            <slot :name="`body-cell-${column.name}`" :props="props.row">{{ _displayCellValue(props.row[column.name]) }}</slot>
           </div>
         </q-td>
 
@@ -99,7 +101,7 @@
 
     <template v-slot:bottom="props">
 
-      <div class="col q-ma-sm batch-actions">
+      <div class="col q-ma-sm batch-actions" v-if="localSettings.show.batchActions">
         <q-btn-dropdown color="primary" :label="labelBatchActionsBtn">
           <q-list>
             <q-item
@@ -107,7 +109,7 @@
               :key="batchAction.action"
               :clickable="selected.length > 0"
               v-close-popup
-              @click="__onAction(batchAction, selected)"
+              @click="__onAction(batchAction)"
               :disabled="selected.length < 1"
             >
               <q-item-section avatar>
@@ -134,7 +136,7 @@
         />
       </div>
 
-      <div class="col-auto export">
+      <div class="col-auto export" v-if="localSettings.show.export">
         <q-btn-dropdown color="primary" label="Export">
           <q-list>
             <q-item
@@ -156,7 +158,7 @@
         </q-btn-dropdown>
       </div>
 
-      <div class="col-auto q-ma-sm pagination-rows-per-page">
+      <div class="col-auto q-ma-sm pagination-rows-per-page" v-if="localSettings.show.paginationPerPage">
         <q-select
           square
           outlined
@@ -178,6 +180,8 @@
 </div>
 </template>
 <script>
+import { extend } from 'quasar'
+import formats from '../utils/formats'
 
 const defaultPagination = {
   sortBy: 'id',
@@ -195,13 +199,21 @@ const defaultSettings = {
     debounce: 300,
     placeholder: 'Search',
     icon: 'fas fa-search'
+  },
+  show: {
+    actions: true,
+    batchActions: true,
+    export: true,
+    header: true,
+    paginationPerPage: true,
+    search: true
   }
 }
 
 const actions = {
   batch: [
     {
-      action: 'delete-multiple',
+      action: 'delete-selected',
       label: 'Delete',
       icon: 'fas fa-trash',
       confirm: true,
@@ -306,13 +318,14 @@ export default {
     getColumns () {
       const columns = this.columns.map(column => {
         column.field = column.hasOwnProperty('field') ? column.field : column.name
-        column.label = column.hasOwnProperty('label') ? column.label : column.name
+        column.label = column.hasOwnProperty('label') ? column.label : formats.titleCase(column.name)
         column.align = column.hasOwnProperty('align') ? column.align : 'left'
         column.sortable = column.hasOwnProperty('sortable') ? column.sortable : true
         return column
       })
       columns.push({
-        name: 'actions'
+        name: 'actions',
+        align: 'center'
       })
       console.log('columns', columns)
       return columns
@@ -327,10 +340,11 @@ export default {
       ...this.localPagination,
       ...this.pagination
     }
-    this.localSettings = {
-      ...this.localSettings,
-      ...this.settings
-    }
+    // this.localSettings = {
+    //   ...this.localSettings,
+    //   ...this.settings
+    // }
+    this.localSettings = extend(true, this.localSettings, this.settings)
     // Initial data request
     this.doRequest()
   },

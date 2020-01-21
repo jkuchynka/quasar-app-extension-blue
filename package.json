@@ -10,9 +10,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jbizzay/blue-quasar"
+    "url": "https://github.com/jkuchynka/quasar-app-extension-blue"
   },
-  "bugs": "https://github.com/jbizzay/blue-quasar/issues",
+  "bugs": "https://github.com/jkuchynka/quasar-app-extension-blue/issues",
   "homepage": "",
   "engines": {
     "node": ">= 8.9.0",
