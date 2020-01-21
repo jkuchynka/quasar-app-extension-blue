@@ -47,6 +47,16 @@ const columns = [
     name: 'custom',
     label: 'Custom Cell Template',
     align: 'center'
+  },
+  {
+    name: 'nickname',
+    field: 'nested',
+    format: (val) => val.nickname
+  },
+  {
+    name: 'born',
+    field: 'nested',
+    format: (val) => val.born
   }
 ]
 
@@ -80,7 +90,6 @@ export default {
   }),
   methods: {
     onAction (action, props, resolve, reject) {
-      console.log('action', action, props)
       if (action === 'delete') {
         sampleData = sampleData.filter(thisRow => {
           return thisRow.id !== props.row.id
@@ -96,7 +105,6 @@ export default {
         sampleData = sampleData.filter(thisRow => {
           return !props.selected.map(dataRow => dataRow.id).includes(thisRow.id)
         })
-        console.log('deleted multiple')
       } else if (action === 'export-csv') {
         // asdf
       } else if (action === 'view') {
@@ -132,7 +140,6 @@ export default {
         return 0
       })
       const rows = filtered.slice((params.page - 1) * params.rowsPerPage, params.page * params.rowsPerPage)
-      console.log('returning rows', rows)
       resolve({
         data: rows,
         count: filtered.length
@@ -148,7 +155,7 @@ export default {
       */
     },
     sayHi (props) {
-      alert(`Hi, ${props.value.row.name}`)
+      alert(`Hi, ${props.props.row.name}`)
     }
   }
 }
@@ -158,43 +165,71 @@ let sampleData = [
     id: 1,
     name: 'Donald Duck',
     location: 'Disney World',
-    role: 'user'
+    role: 'user',
+    nested: {
+      nickname: 'Don',
+      born: '1934'
+    }
   },
   {
     id: 2,
     name: 'Homer Simpson',
     location: 'Springdale',
-    role: 'admin'
+    role: 'admin',
+    nested: {
+      nickname: 'Homie',
+      born: '1956'
+    }
   },
   {
     id: 3,
     name: 'Batman',
     location: 'Gotham City',
-    role: 'user'
+    role: 'user',
+    nested: {
+      nickname: 'Dark Knight',
+      born: '1939'
+    }
   },
   {
     id: 4,
     name: 'Chip and Dale',
     location: 'A tree',
-    role: 'editor'
+    role: 'editor',
+    nested: {
+      nickname: 'Chipmunks',
+      born: '1943'
+    }
   },
   {
     id: 5,
     name: 'Dora',
     location: 'Explorin\'',
-    role: 'admin'
+    role: 'admin',
+    nested: {
+      nickname: 'Explorer',
+      born: '2000'
+    }
   },
   {
     id: 6,
     name: 'Bart Simpson',
     location: 'Springdale',
-    role: 'user'
+    role: 'user',
+    nested: {
+      nickname: 'Bartholomew',
+      born: '1979'
+    }
   },
   {
     id: 7,
     name: 'Marge Simpson',
     location: 'Springdale',
-    role: 'user'
+    role: 'user',
+    nested: {
+      nickname: 'Mom',
+      born: '1962'
+    }
   }
 ]
 </script>

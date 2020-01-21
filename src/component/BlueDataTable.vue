@@ -69,7 +69,7 @@
             />
           </div>
           <div v-else>
-            <slot :name="`body-cell-${column.name}`" :props="props.row">{{ _displayCellValue(props.row[column.name]) }}</slot>
+            <slot :name="`body-cell-${column.name}`" :props="props">{{ _displayCellValue(props, column) }}</slot>
           </div>
         </q-td>
 
@@ -416,11 +416,9 @@ export default {
       }
       return ''
     },
-    _displayCellValue (value) {
-      if (Array.isArray(value) && !value.length) {
-        return ''
-      }
-      return value
+    _displayCellValue (props, column) {
+      const propCol = props.cols.find(col => col.name === column.name)
+      return propCol.value
     },
     paginationUpdated () {
       console.log('paginationUpdated')
