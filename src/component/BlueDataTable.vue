@@ -249,7 +249,9 @@ const defaultActions = {
 const props = {
   actions: {
     type: Object,
-    default: {}
+    default () {
+      return {}
+    }
   },
   columns: {
     type: Array,
@@ -264,7 +266,9 @@ const props = {
   },
   pagination: {
     type: Object,
-    default: {}
+    default () {
+      return {}
+    }
   },
   rowKey: {
     type: String,
@@ -275,7 +279,10 @@ const props = {
     default: 'multiple'
   },
   settings: {
-    type: Object
+    type: Object,
+    default () {
+      return {}
+    }
   },
   title: {
     type: String
@@ -297,9 +304,9 @@ export default {
     rows: [],
     filter: null,
     selected: [],
-    localActions: defaultActions,
-    localPagination: defaultPagination,
-    localSettings: defaultSettings,
+    localActions: extend(true, {}, defaultActions),
+    localPagination: extend(true, {}, defaultPagination),
+    localSettings: extend(true, {}, defaultSettings),
     showAdvancedSearch: false
   }),
   computed: {
@@ -324,16 +331,9 @@ export default {
   },
   mounted () {
     // Allows parent prop to set pagination, setting props
-    this.localPagination = {
-      ...this.localPagination,
-      ...this.pagination
-    }
-    // this.localSettings = {
-    //   ...this.localSettings,
-    //   ...this.settings
-    // }
-    this.localSettings = extend(true, this.localSettings, this.settings)
-    this.localActions = extend(true, this.localActions, this.actions)
+    extend(true, this.localPagination, this.pagination)
+    extend(true, this.localSettings, this.settings)
+    extend(true, this.localActions, this.actions)
     // Initial data request
     this.doRequest()
   },
