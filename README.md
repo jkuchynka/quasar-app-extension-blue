@@ -17,3 +17,7 @@ quasar ext remove blue
 # Info
 
 Docs coming soon
+
+## BlueForm
+
+For validation, see https://github.com/skaterdav85/validatorjs#available-rules
