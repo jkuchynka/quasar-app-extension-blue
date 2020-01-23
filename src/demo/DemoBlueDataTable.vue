@@ -3,6 +3,7 @@
     <blue-data-table
       title="Characters"
       :columns="columns"
+      :actions="actions"
       :on-action="onAction"
       :on-request="onRequest"
       :pagination.sync="pagination"
@@ -28,6 +29,15 @@
   </div>
 </template>
 <script>
+
+const actions = {
+  // view: {
+  //   icon: 'fas fa-file'
+  // },
+  // delete: {
+  //   enabled: false
+  // }
+}
 
 const columns = [
   {
@@ -84,6 +94,7 @@ const settings = {
 export default {
   name: 'DemoBlueDataTable',
   data: () => ({
+    actions,
     columns,
     pagination,
     settings

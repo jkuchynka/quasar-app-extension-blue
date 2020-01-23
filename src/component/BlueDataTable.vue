@@ -56,8 +56,8 @@
           <div v-if="column.component" :is="column.component" :props="props" />
           <div v-else-if="column.name === 'actions'">
             <q-btn
-              v-for="(action, idx) in actions.row"
-              :key="'row-action-' + idx"
+              v-for="(action, a_i) in __getActions('row')"
+              :key="`row-action-${a_i}`"
               :icon="action.icon"
               :title="action.label"
               flat
@@ -65,7 +65,6 @@
               dense
               color="primary"
               @click="__onAction(action, props)"
-              :to="_actionUrl(action.action, props.row)"
             />
           </div>
           <div v-else>
@@ -82,42 +81,25 @@
       </q-tr>
     </template>
 
-    <template v-slot:body-cell-actions="props">
-      <td>
-        <q-btn
-          v-for="(action, idx) in actions.row"
-          :key="'row-action-' + idx"
-          :icon="action.icon"
-          :title="action.label"
-          flat
-          size="sm"
-          dense
-          color="primary"
-          @click="__onAction(action, props)"
-          :to="_actionUrl(action.action, props.row)"
-        />
-      </td>
-    </template>
-
     <template v-slot:bottom="props">
 
       <div class="col q-ma-sm batch-actions" v-if="localSettings.show.batchActions">
         <q-btn-dropdown color="primary" :label="labelBatchActionsBtn">
           <q-list>
             <q-item
-              v-for="batchAction in actions.batch"
-              :key="batchAction.action"
+              v-for="(action, a_i) in __getActions('batch')"
+              :key="`batch-action-${a_i}`"
               :clickable="selected.length > 0"
               v-close-popup
-              @click="__onAction(batchAction)"
+              @click="__onAction(action)"
               :disabled="selected.length < 1"
             >
               <q-item-section avatar>
-                <q-avatar v-if="batchAction.icon" :icon="batchAction.icon" />
-                <q-avatar v-else>{{ batchAction.label[0] }}</q-avatar>
+                <q-avatar v-if="action.icon" :icon="action.icon" />
+                <q-avatar v-else>{{ action.label[0] }}</q-avatar>
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ batchAction.label }}</q-item-label>
+                <q-item-label>{{ action.label }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -140,8 +122,8 @@
         <q-btn-dropdown color="primary" label="Export">
           <q-list>
             <q-item
-              v-for="(action, idx) in actions.export"
-              :key="`export-action-${idx}`"
+              v-for="(action, a_i) in __getActions('export')"
+              :key="`export-action-${a_i}`"
               clickable
               v-close-popup
               @click="__onAction(action)"
@@ -210,59 +192,65 @@ const defaultSettings = {
   }
 }
 
-const actions = {
-  batch: [
-    {
-      action: 'delete-selected',
-      label: 'Delete',
-      icon: 'fas fa-trash',
-      confirm: true,
-      messageConfirm: 'Delete these ${count} ${entityNames}?',
-      messageSuccess: '${count} ${entityNames} deleted'
-    }
-  ],
-  export: [
-    {
-      action: 'export-csv',
-      label: 'CSV',
-      icon: 'fas fa-file-csv'
-    },
-    {
-      action: 'export-xls',
-      label: 'XLS',
-      icon: 'fas fa-file-excel'
-    },
-    {
-      action: 'export-pdf',
-      label: 'PDF',
-      icon: 'fas fa-file-pdf'
-    }
-  ],
-  row: [
-    {
-      action: 'delete',
-      label: 'Delete',
-      labelDone: 'deleted',
-      icon: 'fas fa-trash',
-      confirm: true,
-      messageConfirm: 'Delete this ${entityName}?',
-      messageSuccess: '${entityName} deleted'
-    },
-    {
-      action: 'view',
-      label: 'View',
-      icon: 'fas fa-user'
-    },
-    {
-      action: 'edit',
-      label: 'Edit',
-      icon: 'fas fa-edit',
-      to: '_editTo(row)'
-    }
-  ]
+const defaultActions = {
+  // Batch actions
+  'delete-selected': {
+    enabled: true,
+    type: 'batch',
+    label: 'Delete',
+    icon: 'fas fa-trash',
+    confirm: true,
+    messageConfirm: 'Delete these ${count} ${entityNames}?',
+    messageSuccess: '${count} ${entityNames} deleted'
+  },
+  // Export actions
+  'export-csv': {
+    enabled: true,
+    type: 'export',
+    label: 'CSV',
+    icon: 'fas fa-file-csv'
+  },
+  'export-xls': {
+    enabled: true,
+    type: 'export',
+    label: 'XLS',
+    icon: 'fas fa-file-excel'
+  },
+  'export-pdf': {
+    enabled: true,
+    type: 'export',
+    label: 'PDF',
+    icon: 'fas fa-file-pdf'
+  },
+  // Row actions
+  delete: {
+    enabled: true,
+    type: 'row',
+    label: 'Delete',
+    icon: 'fas fa-trash',
+    confirm: true,
+    messageConfirm: 'Delete this ${entityName}?',
+    messageSuccess: '${entityName} deleted'
+  },
+  view: {
+    enabled: true,
+    type: 'row',
+    label: 'View',
+    icon: 'fas fa-eye'
+  },
+  edit: {
+    enabled: true,
+    type: 'row',
+    label: 'Edit',
+    icon: 'fas fa-edit'
+  }
 }
 
 const props = {
+  actions: {
+    type: Object,
+    default: {}
+  },
   columns: {
     type: Array,
     required: true
@@ -297,7 +285,6 @@ const props = {
 export default {
   props,
   data: () => ({
-    actions,
     confirm: {
       action: null,
       title: 'Confirm',
@@ -310,6 +297,7 @@ export default {
     rows: [],
     filter: null,
     selected: [],
+    localActions: defaultActions,
     localPagination: defaultPagination,
     localSettings: defaultSettings,
     showAdvancedSearch: false
@@ -345,6 +333,7 @@ export default {
     //   ...this.settings
     // }
     this.localSettings = extend(true, this.localSettings, this.settings)
+    this.localActions = extend(true, this.localActions, this.actions)
     // Initial data request
     this.doRequest()
   },
@@ -390,7 +379,7 @@ export default {
       }
       if (!action.confirm) {
         new Promise((resolve, reject) => {
-          this.onAction(action.action, props, resolve, reject)
+          this.onAction(action.name, props, resolve, reject)
         })
         return
       }
@@ -399,9 +388,21 @@ export default {
       this.confirm.message = this.__template(action.messageConfirm)
       this.confirm.show = true
     },
+    // Get enabled actions of a type
+    __getActions (type) {
+      let actions = []
+      Object.keys(this.localActions).forEach(key => {
+        const action = this.localActions[key]
+        if (action.type === type && action.enabled) {
+          action.name = key
+          actions.push(action)
+        }
+      })
+      return actions
+    },
     onConfirm () {
       new Promise((resolve, reject) => {
-        this.onAction(this.confirm.action.action, this.confirm.props, resolve, reject)
+        this.onAction(this.confirm.action.name, this.confirm.props, resolve, reject)
       }).then(() => {
         if (this.confirm.action.messageSuccess) {
           this.$q.notify(this.__template(this.confirm.action.messageSuccess))
