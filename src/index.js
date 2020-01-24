@@ -17,4 +17,5 @@ function extendConf (conf) {
     conf.boot.push('~quasar-app-extension-blue/src/boot/register-blue.js')
     conf.build.transpileDependencies.push(/quasar-app-extension-blue[\\/]src/)
     conf.framework.plugins.push('Notify')
+    conf.framework.components.push('QSelect')
 }

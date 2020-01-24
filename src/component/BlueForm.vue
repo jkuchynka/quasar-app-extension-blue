@@ -3,8 +3,9 @@
 
     <div class="form-title">{{ title }}</div>
 
-    <q-banner inline-actions class="text-white bg-red">
-      Unable to submit form. Please correct the errors below and try again.
+    <q-banner inline-actions class="text-white bg-red" v-if="errors.length > 0">
+      <strong>Unable to submit form. Please correct the errors below and try again.</strong>
+      <div v-for="(error, i) in errors" :key="`error-${i}`">{{ error }}</div>
     </q-banner>
 
     <q-form
@@ -33,11 +34,11 @@
       <div class="row">
         <div class="col">
           <q-btn
+            v-for="(action, i) in __getActions('left')"
+            :key="`action-left-${i}`"
             class="q-ma-sm"
-            label="Submit"
-            type="submit"
-            color="primary"
-            v-show="!settings.hideSubmit"
+            v-bind="action"
+            @click.prevent="__onAction(action)"
           />
         </div>
         <div class="col">
@@ -67,8 +68,25 @@
 </template>
 <script>
 
+import { QInput, QSelect, QToggle, QBtnToggle, QOptionGroup, QSlider, QRange, QTime, QDate, extend } from 'quasar'
 import FormFields from './../utils/formFields'
-import { QInput } from 'quasar'
+
+const defaultActions = {
+  submit: {
+    enabled: true,
+    type: 'submit',
+    color: 'primary',
+    label: 'Submit',
+    position: 'left'
+  },
+  cancel: {
+    enabled: true,
+    color: 'danger',
+    flat: true,
+    label: 'Cancel',
+    position: 'right'
+  }
+}
 
 export default {
   name: 'BlueForm',
@@ -82,8 +100,18 @@ export default {
         return {}
       }
     },
+    actions: Object,
+    onAction: {
+      type: Function
+    },
+    default () {
+      return {}
+    },
     errors: {
-      type: Object
+      type: Array,
+      default () {
+        return []
+      }
     },
     title: {
       type: String
@@ -102,14 +130,26 @@ export default {
       required: true
     }
   },
+  mounted () {
+    extend(true, this.localActions, this.actions)
+  },
   data: () => ({
-    formErrors: {}
+    formErrors: {},
+    localActions: extend(true, {}, defaultActions)
   }),
   created () {
     this._setup()
   },
   components: {
-    QInput
+    QInput,
+    QSelect,
+    QToggle,
+    QBtnToggle,
+    QOptionGroup,
+    QSlider,
+    QRange,
+    QTime,
+    QDate
   },
   computed: {
     formData: {
@@ -123,6 +163,7 @@ export default {
     parsedFields () {
       const formFields = new FormFields(this.fields, this.settings, this.formData)
       const fields = formFields.getFields()
+      console.log('fields', fields)
       return fields
     }
   },
@@ -143,12 +184,30 @@ export default {
           } else {
             if (field.type === 'select' && field.multiple) {
               this.$set(formData, field.name, [])
+            } else if (field.type === 'toggle') {
+              this.$set(formData, field.name, false)
             } else {
               this.$set(formData, field.name, '')
             }
           }
         }
       })
+    },
+    // Get enabled actions for a position
+    __getActions (position) {
+      let actions = []
+      Object.keys(this.localActions).forEach(key => {
+        const action = this.localActions[key]
+        if (action.position === position && action.enabled) {
+          action.name = key
+          actions.push(action)
+        }
+      })
+      console.log('actions', actions, this.localActions, position)
+      return actions
+    },
+    __onAction (action) {
+      this.onAction(action.name)
     },
     __onSubmit () {
       this.clearErrors()

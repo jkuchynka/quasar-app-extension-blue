@@ -67,6 +67,24 @@ class FormFields {
         case 'toggle':
           component = 'q-toggle'
           break
+        case 'btn-toggle':
+          component = 'q-btn-toggle'
+          break
+        case 'option-group':
+          component = 'q-option-group'
+          break
+        case 'slider':
+          component = 'q-slider'
+          break
+        case 'range':
+          component = 'q-range'
+          break
+        case 'time':
+          component = 'q-time'
+          break
+        case 'date':
+          component = 'q-date'
+          break
         default:
           throw new Error(`Invalid or missing field type: ${def.type}`)
       }
@@ -92,7 +110,9 @@ class FormFields {
    * Set the label from the name
    */
   label (def, field) {
-    def.label = def.hasOwnProperty('label') ? def.label : to.title(def.name)
+    if (!['slider', 'range'].includes(def.type)) {
+      def.label = def.hasOwnProperty('label') ? def.label : to.title(def.name)
+    }
   }
 
   /**
@@ -115,11 +135,15 @@ class FormFields {
     extend(true, props, this.settings.props)
     // Add props from the field
     // Field data that shouldn't be a prop
-    const notProps = ['default', 'component', 'rules']
+    const notProps = ['default', 'component', 'rules', 'type']
     let fieldProps = extend(true, {}, def)
     Object.keys(fieldProps).filter(key => !notProps.includes(key)).forEach(key => {
       props[key] = fieldProps[key]
     })
+    const typeFields = ['input']
+    if (typeFields.includes(def.name)) {
+      props.type = def.type
+    }
     extend(true, field.props, props)
   }
 
