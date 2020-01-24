@@ -3,17 +3,15 @@
 
     <div class="form-title">{{ title }}</div>
 
-    <q-banner inline-actions class="text-white bg-red" v-if="errors.length > 0">
+    <q-banner v-if="errors.length > 0" v-bind="bannerProps">
       <strong>Unable to submit form. Please correct the errors below and try again.</strong>
       <div v-for="(error, i) in errors" :key="`error-${i}`">{{ error }}</div>
     </q-banner>
 
     <q-form
-      class="q-gutter-md"
       @submit="__onSubmit"
       @reset="__onReset"
-      autofocus
-      novalidate
+      v-bind="formProps"
     >
 
       <div
@@ -88,6 +86,17 @@ const defaultActions = {
   }
 }
 
+const defaultSettings = {
+  form: {
+    autofocus: true,
+    novalidate: true
+  },
+  banner: {
+    inlineActions: true,
+    class: 'text-white bg-red'
+  }
+}
+
 export default {
   name: 'BlueForm',
   props: {
@@ -132,10 +141,12 @@ export default {
   },
   mounted () {
     extend(true, this.localActions, this.actions)
+    extend(true, this.localSettings, this.settings)
   },
   data: () => ({
     formErrors: {},
-    localActions: extend(true, {}, defaultActions)
+    localActions: extend(true, {}, defaultActions),
+    localSettings: extend(true, {}, defaultSettings)
   }),
   created () {
     this._setup()
@@ -159,6 +170,13 @@ export default {
       set (value) {
         this.$emit('input', value)
       }
+    },
+    bannerProps () {
+      return this.localSettings.banner
+    },
+    formProps () {
+      console.log('set', this.localSettings)
+      return this.localSettings.form
     },
     parsedFields () {
       const formFields = new FormFields(this.fields, this.settings, this.formData)

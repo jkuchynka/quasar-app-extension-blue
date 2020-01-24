@@ -99,7 +99,12 @@ const fields = [
 ]
 
 const settings = {
-
+  form: {
+    // class: 'bg-light-blue-2 q-pa-md'
+  },
+  banner: {
+    // class: 'bg-yellow'
+  }
 }
 
 const actions = {
