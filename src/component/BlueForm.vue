@@ -36,26 +36,17 @@
             :key="`action-left-${i}`"
             class="q-ma-sm"
             v-bind="action"
-            @click.prevent="__onAction(action)"
+            @click="__onAction(action)"
           />
         </div>
         <div class="col">
           <div class="row justify-end">
             <q-btn
+              v-for="(action, i) in __getActions('right')"
+              :key="`action-right-${i}`"
               class="q-ma-sm"
-              label="Delete"
-              type="button"
-              color="red"
-              @click.prevent="_doDelete"
-              v-if="value.id && doDelete"
-            />
-            <q-btn
-              class="q-ma-sm"
-              label="Cancel"
-              type="button"
-              flat
-              color="red"
-              @click.prevent="_doCancel"
+              v-bind="action"
+              @click="__onAction(action)"
             />
           </div>
         </div>
@@ -175,13 +166,11 @@ export default {
       return this.localSettings.banner
     },
     formProps () {
-      console.log('set', this.localSettings)
       return this.localSettings.form
     },
     parsedFields () {
       const formFields = new FormFields(this.fields, this.settings, this.formData)
       const fields = formFields.getFields()
-      console.log('fields', fields)
       return fields
     }
   },
@@ -221,11 +210,12 @@ export default {
           actions.push(action)
         }
       })
-      console.log('actions', actions, this.localActions, position)
       return actions
     },
     __onAction (action) {
-      this.onAction(action.name)
+      if (action.name !== 'submit') {
+        this.onAction(action.name)
+      }
     },
     __onSubmit () {
       this.clearErrors()
