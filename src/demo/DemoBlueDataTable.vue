@@ -112,11 +112,11 @@ export default {
           this.$refs.table.doRequest()
         })
          */
-      } else if (action === 'delete-selected') {
+      } else if (action === 'deleteSelected') {
         sampleData = sampleData.filter(thisRow => {
           return !props.selected.map(dataRow => dataRow.id).includes(thisRow.id)
         })
-      } else if (action === 'export-csv') {
+      } else if (action === 'exportCSV') {
         // asdf
       } else if (action === 'view') {
         this.$refs.table.expand(props.key, 'view')

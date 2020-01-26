@@ -23,7 +23,7 @@
           <div class="q-table__title">{{ title }}</div>
 
           <div class="filtersets">
-            <q-btn class="q-ma-sm active" @click=""
+
           </div>
         </div>
 
@@ -52,7 +52,7 @@
           <q-checkbox dense v-model="props.selected" />
         </q-td>
 
-        <q-td v-for="(column, idx) in getColumns" :key="column.name" :props="props">
+        <q-td v-for="(column) in getColumns" :key="column.name" :props="props">
           <div v-if="column.component" :is="column.component" :props="props" />
           <div v-else-if="column.name === 'actions'">
             <q-btn
@@ -113,16 +113,15 @@
           :max-pages="7"
           :direction-links="true"
           :ellipses="false"
-          direction-links
           @input="_onRequest(props)"
         />
       </div>
 
       <div class="col-auto export" v-if="localSettings.show.export">
-        <q-btn-dropdown color="primary" label="Export">
-          <q-list>
+        <q-btn-dropdown color="primary" label="All">
+          <q-list separator dense>
             <q-item
-              v-for="(action, a_i) in __getActions('export')"
+              v-for="(action, a_i) in __getActions('all')"
               :key="`export-action-${a_i}`"
               clickable
               v-close-popup
@@ -194,7 +193,7 @@ const defaultSettings = {
 
 const defaultActions = {
   // Batch actions
-  'delete-selected': {
+  deleteSelected: {
     enabled: true,
     type: 'batch',
     label: 'Delete',
@@ -204,23 +203,29 @@ const defaultActions = {
     messageSuccess: '${count} ${entityNames} deleted'
   },
   // Export actions
-  'export-csv': {
+  exportCSV: {
     enabled: true,
-    type: 'export',
-    label: 'CSV',
+    type: 'all',
+    label: 'Export CSV',
     icon: 'fas fa-file-csv'
   },
-  'export-xls': {
+  exportXLS: {
     enabled: true,
-    type: 'export',
-    label: 'XLS',
+    type: 'all',
+    label: 'Export XLS',
     icon: 'fas fa-file-excel'
   },
-  'export-pdf': {
+  exportPDF: {
     enabled: true,
-    type: 'export',
-    label: 'PDF',
+    type: 'all',
+    label: 'Export PDF',
     icon: 'fas fa-file-pdf'
+  },
+  import: {
+    enabled: true,
+    type: 'all',
+    label: 'Import',
+    icon: 'fas fa-file'
   },
   // Row actions
   delete: {
@@ -322,7 +327,6 @@ export default {
         name: 'actions',
         align: 'center'
       })
-      console.log('columns', columns)
       return columns
     },
     labelBatchActionsBtn () {
@@ -422,10 +426,9 @@ export default {
       return propCol.value
     },
     paginationUpdated () {
-      console.log('paginationUpdated')
+
     },
     _onRequest (props) {
-      console.log('BlueDataTable _onRequest props', props)
       let { page, rowsPerPage, sortBy, descending } = props.pagination
       this.loading = true
       let dir = descending ? 'desc' : 'asc'
