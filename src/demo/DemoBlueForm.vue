@@ -21,8 +21,9 @@ function mustContainNumbers (val) {
 const fields = [
   {
     name: 'name',
-    autofocus: true,
+    // autofocus: true,
     required: true
+    // on: {input: () => console.log('input')}
   },
   {
     name: 'email',
@@ -95,6 +96,15 @@ const fields = [
     name: 'date',
     type: 'date',
     minimal: true
+  },
+  {
+    name: 'uploader',
+    type: 'uploader',
+    autoUpload: true,
+    multiple: true,
+    label: 'Filtered (CSV, XLS)',
+    extensions: ['csv', 'xls'],
+    url: 'http://localhost:4444'
   }
 ]
 
@@ -104,6 +114,9 @@ const settings = {
   },
   banner: {
     // class: 'bg-yellow'
+  },
+  wrapper: {
+
   }
 }
 

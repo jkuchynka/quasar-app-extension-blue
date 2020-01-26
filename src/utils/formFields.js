@@ -9,7 +9,6 @@ class FormFields {
     this.definitions = extend(true, [], definitions)
     this.settings = extend(true, {}, settings)
     this.formData = formData
-    console.log('definitions', this.definitions, 'settings', this.settings)
   }
 
   /**
@@ -27,7 +26,9 @@ class FormFields {
       this.name(definition, field)
       this.label(definition)
       this.rules(definition, field)
+      this.events(definition, field)
       this.error(definition)
+      this.extra(definition)
       this.props(definition, field)
 
       // Done.
@@ -85,6 +86,9 @@ class FormFields {
         case 'date':
           component = 'q-date'
           break
+        case 'uploader':
+          component = 'q-uploader'
+          break
         default:
           throw new Error(`Invalid or missing field type: ${def.type}`)
       }
@@ -102,16 +106,34 @@ class FormFields {
   /**
    * Setup error for validation message
    */
-  error (def, field) {
+  error (def) {
     def.error = def.hasOwnProperty('error') ? def.error : false
   }
 
   /**
    * Set the label from the name
    */
-  label (def, field) {
-    if (!['slider', 'range'].includes(def.type)) {
+  label (def) {
+    if (!['slider', 'range', 'uploader'].includes(def.type)) {
       def.label = def.hasOwnProperty('label') ? def.label : to.title(def.name)
+    }
+  }
+
+  /**
+   * Set events
+   */
+  events (def, field) {
+    field.events = def.events ? def.events : (def.on ? def.on : {})
+  }
+
+  extra (def) {
+    if (def.type === 'uploader' && def.extensions) {
+      const extensions = def.extensions.map(ext => ext.toLowerCase())
+      def.filter = files => {
+        return files.filter(file => {
+          return extensions.includes(file.name.split('.').pop().toLowerCase())
+        })
+      }
     }
   }
 
@@ -135,7 +157,7 @@ class FormFields {
     extend(true, props, this.settings.props)
     // Add props from the field
     // Field data that shouldn't be a prop
-    const notProps = ['default', 'component', 'rules', 'type']
+    const notProps = ['default', 'component', 'rules', 'type', 'events']
     let fieldProps = extend(true, {}, def)
     Object.keys(fieldProps).filter(key => !notProps.includes(key)).forEach(key => {
       props[key] = fieldProps[key]

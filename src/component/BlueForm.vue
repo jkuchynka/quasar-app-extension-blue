@@ -1,5 +1,5 @@
 <template>
-  <div class="blue-form q-table__card">
+  <div class="blue-form" v-bind="localSettings.wrapper">
 
     <div class="form-title">{{ title }}</div>
 
@@ -25,6 +25,7 @@
             v-model="value[field.name]"
             :is="field.component"
             v-bind="field.props"
+            v-on="field.events"
           />
         </slot>
       </div>
@@ -57,7 +58,7 @@
 </template>
 <script>
 
-import { QInput, QSelect, QToggle, QBtnToggle, QOptionGroup, QSlider, QRange, QTime, QDate, extend } from 'quasar'
+import { QInput, QSelect, QToggle, QBtnToggle, QOptionGroup, QSlider, QRange, QTime, QDate, QUploader, extend } from 'quasar'
 import FormFields from './../utils/formFields'
 
 const defaultActions = {
@@ -85,6 +86,9 @@ const defaultSettings = {
   banner: {
     inlineActions: true,
     class: 'text-white bg-red'
+  },
+  wrapper: {
+    class: 'q-table__card'
   }
 }
 
@@ -151,7 +155,8 @@ export default {
     QSlider,
     QRange,
     QTime,
-    QDate
+    QDate,
+    QUploader
   },
   computed: {
     formData: {
@@ -171,6 +176,7 @@ export default {
     parsedFields () {
       const formFields = new FormFields(this.fields, this.settings, this.formData)
       const fields = formFields.getFields()
+      console.log('fields', fields)
       return fields
     }
   },
