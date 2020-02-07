@@ -2,7 +2,6 @@
 import Validator from 'validatorjs'
 import to from 'to-case'
 import { extend } from 'quasar'
-import globalSettings from './settings'
 
 class FormFields {
   constructor (definitions, settings, formData) {
@@ -47,6 +46,7 @@ class FormFields {
     } else {
       // Default type is text
       const type = def.hasOwnProperty('type') ? def.type : 'text'
+      def.type = type
       switch (type) {
         case 'text':
         case 'textarea':
@@ -154,11 +154,15 @@ class FormFields {
     //   props = Object.assign(props, globalSettings[key])
     // }
 
-    console.log('settings', this.settings)
-    // Add props from settings
+    // Add props from settings for all fields
     extend(true, props, this.settings.props.fields)
 
-    // Add props from the field
+    // Add props from settings for specific fields
+    if (this.settings.props.hasOwnProperty(def.type)) {
+      extend(true, props, this.settings.props[def.type])
+    }
+
+    // Add props from the field definition
     // Field data that shouldn't be a prop
     const notProps = ['default', 'component', 'rules', 'type', 'events']
     let fieldProps = extend(true, {}, def)

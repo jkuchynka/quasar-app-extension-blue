@@ -10,6 +10,9 @@
       :on-action="onAction"
       :on-submit="onSubmit"
     />
+    <pre>
+    {{ formData }}
+    </pre>
   </div>
 </template>
 <script>
@@ -42,14 +45,22 @@ const fields = [
     rules: 'required|same:password'
   },
   {
-    name: 'role',
+    name: 'role_id',
+    label: 'Role',
     type: 'select',
     required: true,
+    // Emulate options getting set by API call
     options: []
   },
   {
     name: 'is_awesome',
     type: 'toggle'
+  },
+  {
+    name: 'is_checked',
+    type: 'checkbox',
+    trueValue: 'it_is_true',
+    falseValue: 'it_is_false'
   },
   {
     name: 'direction',
@@ -121,6 +132,17 @@ const settings = {
     },
     fields: {
       // lazyRules: false
+    },
+    // Props for all select fields
+    select: {
+      optionLabel: 'title',
+      optionValue: 'id',
+      emitValue: true,
+      mapOptions: true
+    },
+    checkbox: {
+      trueValue: 1,
+      falseValue: 0
     }
   }
 }
@@ -148,8 +170,10 @@ export default {
   mounted () {
     // Emulate useing an API call to get select options
     setTimeout(function () {
-      this.fields.find(field => field.name === 'role').options = [
-        'User', 'Editor', 'Admin'
+      this.fields.find(field => field.name === 'role_id').options = [
+        {id: 1, title: 'User'},
+        {id: 2, title: 'Editor'},
+        {id: 3, title: 'Admin'}
       ]
     }.bind(this), 500)
   },

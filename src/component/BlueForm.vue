@@ -58,7 +58,7 @@
 </template>
 <script>
 
-import { QInput, QSelect, QToggle, QBtnToggle, QOptionGroup, QSlider, QRange, QTime, QDate, QUploader, extend } from 'quasar'
+import { QInput, QCheckbox, QSelect, QToggle, QBtnToggle, QOptionGroup, QSlider, QRange, QTime, QDate, QUploader, extend } from 'quasar'
 import FormFields from './../utils/formFields'
 
 const defaultActions = {
@@ -92,7 +92,8 @@ const defaultSettings = {
       class: 'q-table__card'
     },
     fields: {
-      lazyRules: true
+      lazyRules: true,
+      stackLabel: true
     }
   }
 }
@@ -144,17 +145,16 @@ export default {
   mounted () {
     extend(true, this.localActions, this.actions)
     extend(true, this.localSettings, this.settings)
+    this.__setup()
   },
   data: () => ({
     formErrors: {},
     localActions: extend(true, {}, defaultActions),
     localSettings: extend(true, {}, defaultSettings)
   }),
-  created () {
-    this._setup()
-  },
   components: {
     QInput,
+    QCheckbox,
     QSelect,
     QToggle,
     QBtnToggle,
@@ -188,7 +188,7 @@ export default {
       })
     },
     // Setup form data with key for each field
-    _setup () {
+    __setup () {
       let formData = this.value
       this.fields.forEach(field => {
         if (!formData.hasOwnProperty(field.name)) {
@@ -199,6 +199,17 @@ export default {
               this.$set(formData, field.name, [])
             } else if (field.type === 'toggle') {
               this.$set(formData, field.name, false)
+            } else if (field.type === 'checkbox') {
+              let defaultFalse = false
+              if (field.hasOwnProperty('falseValue')) {
+                defaultFalse = field.falseValue
+              } else if (this.localSettings.props.hasOwnProperty('checkbox')) {
+                const checkbox = this.localSettings.props.checkbox
+                if (checkbox.hasOwnProperty('falseValue')) {
+                  defaultFalse = checkbox.falseValue
+                }
+              }
+              this.$set(formData, field.name, defaultFalse)
             } else {
               this.$set(formData, field.name, '')
             }
