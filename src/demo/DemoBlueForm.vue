@@ -109,14 +109,19 @@ const fields = [
 ]
 
 const settings = {
-  form: {
-    // class: 'bg-light-blue-2 q-pa-md'
-  },
-  banner: {
-    // class: 'bg-yellow'
-  },
-  wrapper: {
-
+  props: {
+    form: {
+      // class: 'bg-light-blue-2 q-pa-md'
+    },
+    banner: {
+      // class: 'bg-yellow'
+    },
+    wrapper: {
+      // class: 'bg-green'
+    },
+    fields: {
+      // lazyRules: false
+    }
   }
 }
 

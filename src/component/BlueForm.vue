@@ -1,9 +1,9 @@
 <template>
-  <div class="blue-form" v-bind="localSettings.wrapper">
+  <div class="blue-form" v-bind="localSettings.props.wrapper">
 
     <div class="form-title">{{ title }}</div>
 
-    <q-banner v-if="errors.length > 0" v-bind="bannerProps">
+    <q-banner v-if="errors.length > 0" v-bind="localSettings.props.banner">
       <strong>Unable to submit form. Please correct the errors below and try again.</strong>
       <div v-for="(error, i) in errors" :key="`error-${i}`">{{ error }}</div>
     </q-banner>
@@ -11,7 +11,7 @@
     <q-form
       @submit="__onSubmit"
       @reset="__onReset"
-      v-bind="formProps"
+      v-bind="localSettings.props.form"
     >
 
       <div
@@ -79,61 +79,68 @@ const defaultActions = {
 }
 
 const defaultSettings = {
-  form: {
-    autofocus: true,
-    novalidate: true
+  props: {
+    form: {
+      autofocus: true,
+      novalidate: true
+    },
+    banner: {
+      inlineActions: true,
+      class: 'text-white bg-red'
+    },
+    wrapper: {
+      class: 'q-table__card'
+    },
+    fields: {
+      lazyRules: true
+    }
+  }
+}
+
+const props = {
+  fields: {
+    type: Array
   },
-  banner: {
-    inlineActions: true,
-    class: 'text-white bg-red'
+  settings: {
+    type: Object,
+    default () {
+      return {}
+    }
   },
-  wrapper: {
-    class: 'q-table__card'
+  actions: Object,
+  onAction: {
+    type: Function
+  },
+  default () {
+    return {}
+  },
+  errors: {
+    type: Array,
+    default () {
+      return []
+    }
+  },
+  title: {
+    type: String
+  },
+  onSubmit: {
+    type: Function
+  },
+  onCancel: {
+    type: Function
+  },
+  onDelete: {
+    type: Function
+  },
+  value: {
+    type: Object,
+    required: true
   }
 }
 
 export default {
   name: 'BlueForm',
-  props: {
-    fields: {
-      type: Array
-    },
-    settings: {
-      type: Object,
-      default () {
-        return {}
-      }
-    },
-    actions: Object,
-    onAction: {
-      type: Function
-    },
-    default () {
-      return {}
-    },
-    errors: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    title: {
-      type: String
-    },
-    onSubmit: {
-      type: Function
-    },
-    onCancel: {
-      type: Function
-    },
-    onDelete: {
-      type: Function
-    },
-    value: {
-      type: Object,
-      required: true
-    }
-  },
+  props,
   mounted () {
     extend(true, this.localActions, this.actions)
     extend(true, this.localSettings, this.settings)
@@ -167,16 +174,9 @@ export default {
         this.$emit('input', value)
       }
     },
-    bannerProps () {
-      return this.localSettings.banner
-    },
-    formProps () {
-      return this.localSettings.form
-    },
     parsedFields () {
-      const formFields = new FormFields(this.fields, this.settings, this.formData)
+      const formFields = new FormFields(this.fields, this.localSettings, this.formData)
       const fields = formFields.getFields()
-      console.log('fields', fields)
       return fields
     }
   },

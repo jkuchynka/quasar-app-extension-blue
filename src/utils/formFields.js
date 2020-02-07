@@ -153,8 +153,11 @@ class FormFields {
     // if (globalSettings.hasOwnProperty(key)) {
     //   props = Object.assign(props, globalSettings[key])
     // }
-    // Add props from form settings
-    extend(true, props, this.settings.props)
+
+    console.log('settings', this.settings)
+    // Add props from settings
+    extend(true, props, this.settings.props.fields)
+
     // Add props from the field
     // Field data that shouldn't be a prop
     const notProps = ['default', 'component', 'rules', 'type', 'events']
