@@ -143,6 +143,9 @@ const settings = {
     checkbox: {
       trueValue: 1,
       falseValue: 0
+    },
+    toggle: {
+      falseValue: 'no'
     }
   }
 }

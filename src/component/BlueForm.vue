@@ -190,28 +190,35 @@ export default {
     // Setup form data with key for each field
     __setup () {
       let formData = this.value
+
+      const defaultFalse = (field, type) => {
+        let defaultFalse = false
+        if (field.hasOwnProperty('falseValue')) {
+          defaultFalse = field.falseValue
+        } else if (this.localSettings.props.hasOwnProperty(type)) {
+          const settings = this.localSettings.props[type]
+          if (settings.hasOwnProperty('falseValue')) {
+            defaultFalse = settings.falseValue
+          }
+        }
+        return defaultFalse
+      }
+
       this.fields.forEach(field => {
         if (!formData.hasOwnProperty(field.name)) {
           if (field.hasOwnProperty('default')) {
             this.$set(formData, field.name, field.default)
           } else {
-            if (field.type === 'select' && field.multiple) {
-              this.$set(formData, field.name, [])
-            } else if (field.type === 'toggle') {
-              this.$set(formData, field.name, false)
-            } else if (field.type === 'checkbox') {
-              let defaultFalse = false
-              if (field.hasOwnProperty('falseValue')) {
-                defaultFalse = field.falseValue
-              } else if (this.localSettings.props.hasOwnProperty('checkbox')) {
-                const checkbox = this.localSettings.props.checkbox
-                if (checkbox.hasOwnProperty('falseValue')) {
-                  defaultFalse = checkbox.falseValue
-                }
-              }
-              this.$set(formData, field.name, defaultFalse)
-            } else {
-              this.$set(formData, field.name, '')
+            switch (field.type) {
+              case 'select':
+                this.$set(formData, field.name, [])
+                break
+              case 'checkbox':
+              case 'toggle':
+                this.$set(formData, field.name, defaultFalse(field, field.type))
+                break
+              default:
+                this.$set(formData, field.name, '')
             }
           }
         }
