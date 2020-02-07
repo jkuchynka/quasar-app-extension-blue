@@ -51,7 +51,8 @@ const columns = [
     name: 'location'
   },
   {
-    name: 'role'
+    name: 'role',
+    classes: 'bg-blue'
   },
   {
     name: 'custom',
@@ -88,6 +89,15 @@ const settings = {
     // header: false,
     // paginationPerPage: false,
     // search: false
+  },
+  props: {
+    table: {
+      // class: 'bg-green'
+    }
+    // column: {
+    //   classes: 'bg-red',
+    //   style: 'width: 300px'
+    // }
   }
 }
 

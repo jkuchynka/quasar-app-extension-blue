@@ -3,19 +3,17 @@
   <q-table
     :title="title"
     :data="rows"
-    :columns="getColumns"
+    :columns="__columns"
     :pagination.sync="localPagination"
     :row-key="rowKey"
     @update:pagination="paginationUpdated"
-    separator="cell"
     :loading="loading"
     :filter="filter"
-    class="table-sticky-header"
     @request="_onRequest"
     :selection="selection"
     :selected.sync="selected"
-    binary-state-sort
     ref="qtable"
+    v-bind="localSettings.props.table"
   >
     <template v-slot:top>
       <div v-if="localSettings.show.header" class="col-12 row">
@@ -52,7 +50,7 @@
           <q-checkbox dense v-model="props.selected" />
         </q-td>
 
-        <q-td v-for="(column) in getColumns" :key="column.name" :props="props">
+        <q-td v-for="(column) in __columns" :key="column.name" :props="props">
           <div v-if="column.component" :is="column.component" :props="props" />
           <div v-else-if="column.name === 'actions'">
             <q-btn
@@ -176,6 +174,16 @@ const defaultSettings = {
   pagination: {
     rowsPerPageOptions: [5, 10, 20, 50]
   },
+  props: {
+    column: {
+      classes: ''
+    },
+    table: {
+      separator: 'cell',
+      class: 'table-sticky-header',
+      binaryStateSort: true
+    }
+  },
   search: {
     debounce: 300,
     placeholder: 'Search',
@@ -228,15 +236,6 @@ const defaultActions = {
     icon: 'fas fa-file'
   },
   // Row actions
-  delete: {
-    enabled: true,
-    type: 'row',
-    label: 'Delete',
-    icon: 'fas fa-trash',
-    confirm: true,
-    messageConfirm: 'Delete this ${entityName}?',
-    messageSuccess: '${entityName} deleted'
-  },
   view: {
     enabled: true,
     type: 'row',
@@ -248,6 +247,15 @@ const defaultActions = {
     type: 'row',
     label: 'Edit',
     icon: 'fas fa-edit'
+  },
+  delete: {
+    enabled: true,
+    type: 'row',
+    label: 'Delete',
+    icon: 'fas fa-trash',
+    confirm: true,
+    messageConfirm: 'Delete this ${entityName}?',
+    messageSuccess: '${entityName} deleted'
   }
 }
 
@@ -295,6 +303,10 @@ const props = {
 }
 
 export default {
+  name: 'BlueDataTable',
+  setDefaults (settings) {
+    extend(true, defaultSettings, settings)
+  },
   props,
   data: () => ({
     confirm: {
@@ -315,18 +327,24 @@ export default {
     showAdvancedSearch: false
   }),
   computed: {
-    getColumns () {
-      const columns = this.columns.map(column => {
-        column.field = column.hasOwnProperty('field') ? column.field : column.name
-        column.label = column.hasOwnProperty('label') ? column.label : formats.titleCase(column.name)
-        column.align = column.hasOwnProperty('align') ? column.align : 'left'
-        column.sortable = column.hasOwnProperty('sortable') ? column.sortable : true
+    __columns () {
+      const definitions = [
+        ...this.columns,
+        {
+          name: 'actions',
+          align: 'center'
+        }
+      ]
+      let defaults = this.localSettings.props.column
+      const columns = definitions.map(definition => {
+        let column = Object.assign({}, defaults, definition)
+        column.field = column.field ? column.field : column.name
+        column.label = column.label ? column.label : formats.titleCase(column.name)
+        column.align = column.align ? column.align : 'left'
+        column.sortable = column.sortable ? column.sortable : true
         return column
       })
-      columns.push({
-        name: 'actions',
-        align: 'center'
-      })
+
       return columns
     },
     labelBatchActionsBtn () {
