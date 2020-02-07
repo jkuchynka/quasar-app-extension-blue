@@ -78,7 +78,7 @@ const defaultActions = {
   }
 }
 
-const defaultSettings = {
+let defaultSettings = {
   props: {
     form: {
       autofocus: true,
@@ -141,6 +141,9 @@ const props = {
 
 export default {
   name: 'BlueForm',
+  setDefaults (settings) {
+    extend(true, defaultSettings, settings)
+  },
   props,
   mounted () {
     extend(true, this.localActions, this.actions)

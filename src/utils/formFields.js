@@ -140,19 +140,15 @@ class FormFields {
   /**
    * Setup props for quasar component,
    * Allow props to be defined in this order:
-   * Global
-   * Form
+   * Global default settings
+   * Form-level settings
    * Field (Most data in field definition will pass along as a prop)
    */
   props (def, field) {
-    // Setup props from global all fields settings
-    // let props = Object.assign({}, globalSettings.props)
     let props = {}
-    // Add props from global field type settings
-    // const key = result.component.replace('q-', '')
-    // if (globalSettings.hasOwnProperty(key)) {
-    //   props = Object.assign(props, globalSettings[key])
-    // }
+
+    // Props from global settings for all and specific fields
+    // should already be merged into this.settings
 
     // Add props from settings for all fields
     extend(true, props, this.settings.props.fields)
