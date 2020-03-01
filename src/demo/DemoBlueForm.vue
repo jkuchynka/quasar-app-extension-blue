@@ -45,6 +45,13 @@ const fields = [
     rules: 'required|same:password'
   },
   {
+    name: 'description',
+    type: 'textarea',
+    rows: 4,
+    placeholder: 'Enter a description',
+    filled: true
+  },
+  {
     name: 'role_id',
     label: 'Role',
     type: 'select',

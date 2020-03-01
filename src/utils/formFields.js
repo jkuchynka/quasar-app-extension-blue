@@ -165,7 +165,7 @@ class FormFields {
     Object.keys(fieldProps).filter(key => !notProps.includes(key)).forEach(key => {
       props[key] = fieldProps[key]
     })
-    const typeFields = ['password']
+    const typeFields = ['password', 'textarea']
     if (typeFields.includes(def.type)) {
       props.type = def.type
     }
