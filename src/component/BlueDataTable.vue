@@ -12,6 +12,7 @@
     @request="_onRequest"
     :selection="selection"
     :selected.sync="selected"
+    :expanded.sync="expanded"
     ref="qtable"
     v-bind="localSettings.props.table"
   >
@@ -316,6 +317,7 @@ export default {
       props: {},
       show: false
     },
+    expanded: [],
     expandView: {},
     loading: false,
     rows: [],
@@ -377,10 +379,10 @@ export default {
       }
       // Update qtable and force update
       if (!expand) {
-        delete this.$refs.qtable.rowsExpanded[id]
+        this.expanded = this.expanded.filter(key => key !== id)
         delete this.expandView[id]
       } else {
-        this.$refs.qtable.rowsExpanded[id] = true
+        this.expanded.push(id)
         this.expandView[id] = expandView
       }
       this.$forceUpdate()
