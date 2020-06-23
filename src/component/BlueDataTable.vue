@@ -17,31 +17,56 @@
     v-bind="localSettings.props.table"
   >
     <template v-slot:top>
-      <div v-if="localSettings.show.header" class="col-12 row">
-        <div class="col-8 title">
-          <div class="q-table__title">{{ title }}</div>
+      <div v-if="localSettings.show.header" class="col-12">
 
-          <div class="filtersets">
+        <div class="row items-start">
+
+          <div class="col-6 title">
+            <div class="q-table__title">{{ title }}</div>
+          </div>
+
+          <div class="col-6">
+
+            <div class="row items-end">
+
+              <div class="col-8">
+                <q-input v-model="filter" :placeholder="localSettings.search.placeholder" class="search-input" dense clearable :debounce="localSettings.search.debounce" v-if="localSettings.show.search">
+                  <template v-slot:append>
+                    <q-icon :name="localSettings.search.icon" />
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="col-4 q-px-sm">
+                <q-btn
+                  flat
+                  no-caps
+                  padding="xs lg xs md"
+                  @click="showAdvancedSearch = !showAdvancedSearch"
+                >
+                  <span>Advanced</span>
+                  <q-icon
+                    :name="'fas fa-chevron-' + (showAdvancedSearch ? 'up' : 'down')"
+                    size="14px"
+                    class="q-ml-sm"
+                  />
+                </q-btn>
+              </div>
+
+            </div>
 
           </div>
         </div>
 
-        <div class="col-4">
-          <q-input v-model="filter" :placeholder="localSettings.search.placeholder" class="search-input" dense clearable :debounce="localSettings.search.debounce" v-if="localSettings.show.search">
-            <template v-slot:append>
-              <q-icon :name="localSettings.search.icon" />
-            </template>
-          </q-input>
-
-          <q-btn
-            class="filtersets-btn"
-            :icon="'fas fa-chevron-' + (showAdvancedSearch ? 'up' : 'down')"
-            flat
-            size="sm"
-            @click="showAdvancedSearch = !showAdvancedSearch"
-            title="Show Filters"
+        <div class="row">
+          <blue-filters
+            :filters="filters"
+            :filtersets="filtersets"
+            @set-filters="__setFilters"
+            :show-filters="showAdvancedSearch"
           />
         </div>
+
       </div>
     </template>
 
@@ -271,6 +296,27 @@ const props = {
     type: Array,
     required: true
   },
+  /**
+   * Allowed filters for the blue-filterset component
+   *
+   * @type Array
+   *   e.g. [
+   *     {
+   *       field: 'id',
+   *       operators: ['=', '>', '<']
+   *     },
+   *     {
+   *       field: 'username',
+   *       operators: ['*', '=']
+   *     }
+   *   ]
+   */
+  filters: {
+    type: Array
+  },
+  filtersets: {
+    type: Array
+  },
   onAction: {
     type: Function
   },
@@ -322,6 +368,7 @@ export default {
     loading: false,
     rows: [],
     filter: null,
+    activeFilters: [],
     selected: [],
     localActions: extend(true, {}, defaultActions),
     localPagination: extend(true, {}, defaultPagination),
@@ -358,6 +405,7 @@ export default {
     extend(true, this.localPagination, this.pagination)
     extend(true, this.localSettings, this.settings)
     extend(true, this.localActions, this.actions)
+
     // Initial data request
     this.doRequest()
   },
@@ -386,6 +434,10 @@ export default {
         this.expandView[id] = expandView
       }
       this.$forceUpdate()
+    },
+    __setFilters (filters) {
+      this.activeFilters = filters
+      this.doRequest()
     },
     __template (string) {
       string = string.replace(/\$\{count\}/g, this.selected.length)
@@ -456,7 +508,8 @@ export default {
         ...props.pagination,
         ...{
           filter: this.filter
-        }
+        },
+        filters: this.activeFilters
       }
       return new Promise((resolve, reject) => {
         this.onRequest(params, resolve, reject)
@@ -497,13 +550,9 @@ export default {
 }
 </script>
 <style scoped>
-.search-input {
-  float: left;
-}
-.filtersets-btn {
-  float: right;
+.toggle-filters-btn .q-icon {
   position: relative;
-  top: 8px;
+  left: 4px;
 }
 .expanded-close-btn {
   position: absolute;
