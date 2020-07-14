@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="blue-data-table">
   <q-table
     :title="title"
     :data="rows"
@@ -27,10 +27,20 @@
 
           <div class="col-6">
 
-            <div class="row items-end">
+            <div class="row items-end search-row">
 
               <div class="col-8">
-                <q-input v-model="filter" :placeholder="localSettings.search.placeholder" class="search-input" dense clearable :debounce="localSettings.search.debounce" v-if="localSettings.show.search">
+                <q-input
+                  v-model="filter"
+                  :placeholder="localSettings.search.placeholder"
+                  class="search-input"
+                  dense
+                  clearable
+                  filled
+                  dark
+                  :debounce="localSettings.search.debounce"
+                  v-if="localSettings.show.search"
+                >
                   <template v-slot:append>
                     <q-icon :name="localSettings.search.icon" />
                   </template>
@@ -39,7 +49,8 @@
 
               <div class="col-4 q-px-sm">
                 <q-btn
-                  flat
+                  color="blue-grey-9"
+                  unelevated
                   no-caps
                   padding="xs lg xs md"
                   @click="showAdvancedSearch = !showAdvancedSearch"
@@ -62,7 +73,9 @@
           <blue-filters
             :filters="filters"
             :filtersets="filtersets"
+            :filtersets-group="filtersetsGroup"
             @set-filters="__setFilters"
+            @save-filterset=""
             :show-filters="showAdvancedSearch"
           />
         </div>
@@ -71,7 +84,7 @@
     </template>
 
     <template v-slot:body="props">
-      <q-tr :props="props">
+      <q-tr :props="props" class="main-row" :class="{ striped: props.key % 2 === 0 }">
         <q-td auto-width align="center">
           <q-checkbox dense v-model="props.selected" />
         </q-td>
@@ -97,7 +110,7 @@
         </q-td>
 
       </q-tr>
-      <q-tr v-show="props.expand" :props="props">
+      <q-tr v-show="props.expand" :props="props" class="expand-row">
         <q-td colspan="100%" style="position: relative">
           <q-btn class="expanded-close-btn" color="red" icon="fas fa-times" @click="expand(props.key)" size="sm" />
           <slot name="expanded" :props="{...props, ...{expandView: expandView[props.key]}}">Expanded</slot>
@@ -109,7 +122,7 @@
 
       <div class="col q-ma-sm batch-actions" v-if="localSettings.show.batchActions">
         <q-btn-dropdown color="primary" :label="labelBatchActionsBtn">
-          <q-list>
+          <q-list dark class="bg-blue-grey-10">
             <q-item
               v-for="(action, a_i) in __getActions('batch')"
               :key="`batch-action-${a_i}`"
@@ -138,12 +151,13 @@
           :direction-links="true"
           :ellipses="false"
           @input="_onRequest(props)"
+          dark
         />
       </div>
 
       <div class="col-auto export" v-if="localSettings.show.export">
         <q-btn-dropdown color="primary" label="All">
-          <q-list separator dense>
+          <q-list separator dark class="bg-blue-grey-10">
             <q-item
               v-for="(action, a_i) in __getActions('all')"
               :key="`export-action-${a_i}`"
@@ -167,6 +181,8 @@
         <q-select
           square
           outlined
+          dark
+          color="white"
           v-model="localPagination.rowsPerPage"
           :options="localSettings.pagination.rowsPerPageOptions"
           dense
@@ -317,6 +333,9 @@ const props = {
   filtersets: {
     type: Array
   },
+  filtersetsGroup: {
+    type: String
+  },
   onAction: {
     type: Function
   },
@@ -435,6 +454,9 @@ export default {
       }
       this.$forceUpdate()
     },
+    __saveFilterset () {
+
+    },
     __setFilters (filters) {
       this.activeFilters = filters
       this.doRequest()
@@ -549,14 +571,43 @@ export default {
   }
 }
 </script>
-<style scoped>
-.toggle-filters-btn .q-icon {
-  position: relative;
-  left: 4px;
-}
-.expanded-close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
+<style lang="sass">
+.blue-data-table
+  .search-row
+    align-items: center
+  .toggle-filters-btn
+    .q-icon
+      position: relative
+      left: 4px;
+  .expanded-close-btn
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  .q-table__top, .q-table__bottom
+    background: $blue-grey-10
+    color: #f9f9f9;
+  .pagination
+    .q-btn
+      color: #f9f9f9 !important
+  .q-table
+    .q-checkbox__svg
+      color: #333
+    thead tr
+      background: $blue-grey-8
+      color: #ddd
+    tr
+      th:first-child, td:first-child
+        background: $blue-grey-8
+        .q-checkbox__bg
+          background: #f9f9f9
+        .q-checkbox__bg
+          border: 1px solid #f9f9f9
+      th
+        font-weight: bold
+        font-size: 100%
+    tbody
+      .main-row.striped
+        background: $blue-grey-1
+      tr.selected
+        background: $blue-grey-3 !important
 </style>
