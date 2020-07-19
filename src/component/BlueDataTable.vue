@@ -16,6 +16,10 @@
     ref="qtable"
     v-bind="localSettings.props.table"
   >
+    <template v-slot:loading>
+      <q-inner-loading showing dark color="primary" />
+    </template>
+
     <template v-slot:top>
       <div v-if="localSettings.show.header" class="col-12">
 
@@ -29,7 +33,7 @@
 
             <div class="row items-end search-row">
 
-              <div class="col-8">
+              <div class="col-12">
                 <q-input
                   v-model="filter"
                   :placeholder="localSettings.search.placeholder"
@@ -47,23 +51,6 @@
                 </q-input>
               </div>
 
-              <div class="col-4 q-px-sm">
-                <q-btn
-                  color="blue-grey-9"
-                  unelevated
-                  no-caps
-                  padding="xs lg xs md"
-                  @click="showAdvancedSearch = !showAdvancedSearch"
-                >
-                  <span>Advanced</span>
-                  <q-icon
-                    :name="'fas fa-chevron-' + (showAdvancedSearch ? 'up' : 'down')"
-                    size="14px"
-                    class="q-ml-sm"
-                  />
-                </q-btn>
-              </div>
-
             </div>
 
           </div>
@@ -72,11 +59,12 @@
         <div class="row">
           <blue-filters
             :filters="filters"
-            :filtersets="filtersets"
-            :filtersets-group="filtersetsGroup"
+            :filter-sets="filterSets"
+            :filter-sets-group="filterSetsGroup"
             @set-filters="__setFilters"
-            @save-filterset=""
-            :show-filters="showAdvancedSearch"
+            @create-filter-set="__createFilterSet"
+            @update-filter-set="__updateFilterSet"
+            @delete-filter-set="__deleteFilterSet"
           />
         </div>
 
@@ -330,10 +318,10 @@ const props = {
   filters: {
     type: Array
   },
-  filtersets: {
+  filterSets: {
     type: Array
   },
-  filtersetsGroup: {
+  filterSetsGroup: {
     type: String
   },
   onAction: {
@@ -454,8 +442,14 @@ export default {
       }
       this.$forceUpdate()
     },
-    __saveFilterset () {
-
+    __createFilterSet (props) {
+      this.onAction('createFilterSet', props)
+    },
+    __updateFilterSet (props) {
+      this.onAction('updateFilterSet', props)
+    },
+    __deleteFilterSet (props) {
+      this.onAction('deleteFilterSet', props)
     },
     __setFilters (filters) {
       this.activeFilters = filters
